@@ -49,8 +49,9 @@ func (t *SchemaWrapper) UnmarshalYAML(unmarshal func(any) error) error {
 }
 
 type SchemaTypeInfo struct {
-	typeName string
-	ref      string
+	typeName   string
+	ref        string
+	enumValues []any
 }
 
 type SchemaDefinitionInfo struct {
@@ -85,6 +86,17 @@ func fieldToDefinitionInfo(pkg string, field *Field) SchemaDefinitionInfo {
 				enumValues = append(enumValues, val)
 			}
 
+			// for a list, the values are the allowed items, not the allowed lists
+			if after, ok := strings.CutPrefix(goType, "[]"); ok {
+				itemsTypeInfo := goTypeToTypeInfo(pkg, after)
+				itemsTypeInfo.enumValues = enumValues
+
+				return SchemaDefinitionInfo{
+					typeInfo:           SchemaTypeInfo{typeName: "array"},
+					arrayItemsTypeInfo: itemsTypeInfo,
+				}
+			}
+
 			return SchemaDefinitionInfo{enumValues: enumValues}
 		}
 	}
@@ -117,6 +129,10 @@ func typeInfoToSchema(typeInfo *SchemaTypeInfo) *jsonschema.Schema {
 
 	if typeInfo.ref != "" {
 		schema.Ref = typeInfo.ref
+	}
+
+	if typeInfo.enumValues != nil {
+		schema.Enum = typeInfo.enumValues
 	}
 
 	return &schema

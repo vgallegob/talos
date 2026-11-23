@@ -4,6 +4,8 @@
 
 package security
 
+//docgen:jsonschema
+
 import (
 	"errors"
 	"fmt"

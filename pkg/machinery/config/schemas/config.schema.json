@@ -1640,12 +1640,16 @@
           "x-intellij-html-description": "\u003cp\u003eHost paths which must exist before the container starts.\u003c/p\u003e\n\n\u003cp\u003ePolled, so a path that never appears leaves the container waiting indefinitely.\u003c/p\u003e\n"
         },
         "network": {
-          "enum": [
-            "addresses",
-            "connectivity",
-            "hostname",
-            "etcfiles"
-          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "addresses",
+              "connectivity",
+              "hostname",
+              "etcfiles"
+            ]
+          },
+          "type": "array",
           "title": "network",
           "description": "Network readiness conditions which must be satisfied.\n",
           "markdownDescription": "Network readiness conditions which must be satisfied.",
@@ -2161,16 +2165,20 @@
           "x-intellij-html-description": "\u003cp\u003eAbsolute path inside the container\u0026rsquo;s mount namespace.\u003c/p\u003e\n"
         },
         "options": {
-          "enum": [
-            "ro",
-            "rw",
-            "noexec",
-            "nosuid",
-            "nodev",
-            "noatime",
-            "rbind",
-            "rshared"
-          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "ro",
+              "rw",
+              "noexec",
+              "nosuid",
+              "nodev",
+              "noatime",
+              "rbind",
+              "rshared"
+            ]
+          },
+          "type": "array",
           "title": "options",
           "description": "Mount options. Volume mounts are writable by default (rw).\n\nA volume whose ExistingVolumeConfig or ExternalVolumeConfig declares it\nread-only must be mounted with ro.\n",
           "markdownDescription": "Mount options. Volume mounts are writable by default (`rw`).\n\nA volume whose `ExistingVolumeConfig` or `ExternalVolumeConfig` declares it\nread-only must be mounted with `ro`.",
@@ -9613,6 +9621,129 @@
       ],
       "description": "WorkloadResourceRoot holds the limits of one workload root."
     },
+    "security.ImageKeylessVerifierV1Alpha1": {
+      "properties": {
+        "issuer": {
+          "type": "string",
+          "title": "issuer",
+          "description": "OIDC issuer URL for keyless verification.\n",
+          "markdownDescription": "OIDC issuer URL for keyless verification.",
+          "x-intellij-html-description": "\u003cp\u003eOIDC issuer URL for keyless verification.\u003c/p\u003e\n"
+        },
+        "subject": {
+          "type": "string",
+          "title": "subject",
+          "description": "Expected subject for keyless verification.\n\nThis is the identity (email, URI) that signed the image.\n",
+          "markdownDescription": "Expected subject for keyless verification.\n\nThis is the identity (email, URI) that signed the image.",
+          "x-intellij-html-description": "\u003cp\u003eExpected subject for keyless verification.\u003c/p\u003e\n\n\u003cp\u003eThis is the identity (email, URI) that signed the image.\u003c/p\u003e\n"
+        },
+        "subjectRegex": {
+          "type": "string",
+          "title": "subjectRegex",
+          "description": "Regex pattern for subject matching.\n\nUse this instead of subject for flexible matching.\n",
+          "markdownDescription": "Regex pattern for subject matching.\n\nUse this instead of subject for flexible matching.",
+          "x-intellij-html-description": "\u003cp\u003eRegex pattern for subject matching.\u003c/p\u003e\n\n\u003cp\u003eUse this instead of subject for flexible matching.\u003c/p\u003e\n"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "ImageKeylessVerifierV1Alpha1 configures a signature verification provider using Cosign keyless verification."
+    },
+    "security.ImagePublicKeyVerifierV1Alpha1": {
+      "properties": {
+        "certificate": {
+          "type": "string",
+          "title": "certificate",
+          "description": "A public certificate in PEM format accepted for image signature verification.\n",
+          "markdownDescription": "A public certificate in PEM format accepted for image signature verification.",
+          "x-intellij-html-description": "\u003cp\u003eA public certificate in PEM format accepted for image signature verification.\u003c/p\u003e\n"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "ImagePublicKeyVerifierV1Alpha1 configures a signature verification provider using a static public key."
+    },
+    "security.ImageVerificationConfigV1Alpha1": {
+      "properties": {
+        "apiVersion": {
+          "enum": [
+            "v1alpha1"
+          ],
+          "title": "apiVersion",
+          "description": "apiVersion is the API version of the resource.\n",
+          "markdownDescription": "apiVersion is the API version of the resource.",
+          "x-intellij-html-description": "\u003cp\u003eapiVersion is the API version of the resource.\u003c/p\u003e\n"
+        },
+        "kind": {
+          "enum": [
+            "ImageVerificationConfig"
+          ],
+          "title": "kind",
+          "description": "kind is the kind of the resource.\n",
+          "markdownDescription": "kind is the kind of the resource.",
+          "x-intellij-html-description": "\u003cp\u003ekind is the kind of the resource.\u003c/p\u003e\n"
+        },
+        "rules": {
+          "items": {
+            "$ref": "#/$defs/security.ImageVerificationRuleV1Alpha1"
+          },
+          "type": "array",
+          "title": "rules",
+          "description": "List of verification rules.\nRules are evaluated in order; first matching rule applies.\n",
+          "markdownDescription": "List of verification rules.\nRules are evaluated in order; first matching rule applies.",
+          "x-intellij-html-description": "\u003cp\u003eList of verification rules.\nRules are evaluated in order; first matching rule applies.\u003c/p\u003e\n"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "apiVersion",
+        "kind"
+      ],
+      "description": "ImageVerificationConfig configures image signature verification policy."
+    },
+    "security.ImageVerificationRuleV1Alpha1": {
+      "properties": {
+        "image": {
+          "type": "string",
+          "title": "image",
+          "description": "Image reference pattern to match for this rule.\nSupports glob patterns, matches only on the image registry and repository, not on the tag or digest.\n\nThe pattern is matched against the normalized image reference, which always starts with a registry\ndomain: docker.io/library/nginx* matches nginx:latest, while library/nginx* matches nothing.\nThe Docker Hub domain is always normalized to docker.io, so a pattern written against\nindex.docker.io or registry-1.docker.io matches the same images a docker.io one does.\n",
+          "markdownDescription": "Image reference pattern to match for this rule.\nSupports glob patterns, matches only on the image registry and repository, not on the tag or digest.\n\nThe pattern is matched against the normalized image reference, which always starts with a registry\ndomain: `docker.io/library/nginx*` matches `nginx:latest`, while `library/nginx*` matches nothing.\nThe Docker Hub domain is always normalized to `docker.io`, so a pattern written against\n`index.docker.io` or `registry-1.docker.io` matches the same images a `docker.io` one does.",
+          "x-intellij-html-description": "\u003cp\u003eImage reference pattern to match for this rule.\nSupports glob patterns, matches only on the image registry and repository, not on the tag or digest.\u003c/p\u003e\n\n\u003cp\u003eThe pattern is matched against the normalized image reference, which always starts with a registry\ndomain: \u003ccode\u003edocker.io/library/nginx*\u003c/code\u003e matches \u003ccode\u003enginx:latest\u003c/code\u003e, while \u003ccode\u003elibrary/nginx*\u003c/code\u003e matches nothing.\nThe Docker Hub domain is always normalized to \u003ccode\u003edocker.io\u003c/code\u003e, so a pattern written against\n\u003ccode\u003eindex.docker.io\u003c/code\u003e or \u003ccode\u003eregistry-1.docker.io\u003c/code\u003e matches the same images a \u003ccode\u003edocker.io\u003c/code\u003e one does.\u003c/p\u003e\n"
+        },
+        "skip": {
+          "type": "boolean",
+          "title": "skip",
+          "description": "Skip verification for this image pattern (default: false).\n",
+          "markdownDescription": "Skip verification for this image pattern (default: false).",
+          "x-intellij-html-description": "\u003cp\u003eSkip verification for this image pattern (default: false).\u003c/p\u003e\n"
+        },
+        "deny": {
+          "type": "boolean",
+          "title": "deny",
+          "description": "Deny pulling images matching the pattern (default: false).\n",
+          "markdownDescription": "Deny pulling images matching the pattern (default: false).",
+          "x-intellij-html-description": "\u003cp\u003eDeny pulling images matching the pattern (default: false).\u003c/p\u003e\n"
+        },
+        "keyless": {
+          "$ref": "#/$defs/security.ImageKeylessVerifierV1Alpha1",
+          "title": "keyless",
+          "description": "Keyless verifier configuration to use for this rule.\n",
+          "markdownDescription": "Keyless verifier configuration to use for this rule.",
+          "x-intellij-html-description": "\u003cp\u003eKeyless verifier configuration to use for this rule.\u003c/p\u003e\n"
+        },
+        "publicKey": {
+          "$ref": "#/$defs/security.ImagePublicKeyVerifierV1Alpha1",
+          "title": "publicKey",
+          "description": "Public key verifier configuration to use for this rule.\n",
+          "markdownDescription": "Public key verifier configuration to use for this rule.",
+          "x-intellij-html-description": "\u003cp\u003ePublic key verifier configuration to use for this rule.\u003c/p\u003e\n"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "ImageVerificationRuleV1Alpha1 defines a verification rule."
+    },
     "security.TrustedRootsConfigV1Alpha1": {
       "properties": {
         "apiVersion": {
@@ -10576,6 +10707,9 @@
     },
     {
       "$ref": "#/$defs/runtime.WorkloadResourceConfigV1Alpha1"
+    },
+    {
+      "$ref": "#/$defs/security.ImageVerificationConfigV1Alpha1"
     },
     {
       "$ref": "#/$defs/security.TrustedRootsConfigV1Alpha1"
